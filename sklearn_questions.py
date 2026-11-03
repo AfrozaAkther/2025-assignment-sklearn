@@ -283,7 +283,6 @@ class MonthlySplit(BaseCrossValidator):
 
             idx_train = all_indices[months == train_month]
             idx_test = all_indices[months == test_month]
-
             yield (
                 idx_train,
                 idx_test
