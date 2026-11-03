@@ -19,9 +19,8 @@ scikit-learn estimator needs to check that the input given to `fit` and
 `predict` are correct using the `validate_data, check_is_fitted` functions
 imported in this file.
 You can find more information on how they should be used in the following doc:
-https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator.
+https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator
 Make sure to use them to pass `test_nearest_neighbor_check_estimator`.
-
 
 Detailed instructions for question 2:
 The data to split should contain the index or one column in
@@ -48,23 +47,20 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 to compute distances between 2 sets of samples.
 """
+
 import numpy as np
 import pandas as pd
-
-from sklearn.base import BaseEstimator
-from sklearn.base import ClassifierMixin
-
-from sklearn.model_selection import BaseCrossValidator
-
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.validation import validate_data
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.model_selection import BaseCrossValidator
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """KNearestNeighbors classifier."""
 
-    def __init__(self, n_neighbors=1):  
+    def __init__(self, n_neighbors=1):
+        """Initialize the KNearestNeighbors classifier."""
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
@@ -80,7 +76,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         Returns
         -------
         self : instance of KNearestNeighbors
-            The current instance of the classifier
+            The current instance of the classifier.
         """
         if (
             not isinstance(self.n_neighbors, (int, np.integer))
@@ -91,17 +87,19 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
         X, y = validate_data(self, X, y)
 
-        if np.issubdtype(y.dtype, np.floating):
-            if not np.all(y == np.floor(y)):
-                raise ValueError(
-    "Unknown label type: continuous. Maybe you are trying to fit a "
-    "classifier, which expects discrete classes on a regression target "
-    "with continuous values."
-                )
+        if (
+            np.issubdtype(y.dtype, np.floating)
+            and not np.all(y == np.floor(y))
+        ):
+            raise ValueError(
+                "Unknown label type: continuous. Maybe you are trying to "
+                "fit a classifier, which expects discrete classes on a "
+                "regression target with continuous values."
+            )
 
         if self.n_neighbors > X.shape[0]:
             raise ValueError(
-                f"n_neighbors cannot exceed the number of training samples; "
+                "n_neighbors cannot exceed the number of training samples; "
                 f"n_samples = {X.shape[0]}."
             )
 
@@ -110,7 +108,6 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.classes_ = np.unique(y)
 
         return self
-
 
     def predict(self, X):
         """Predict function.
@@ -134,7 +131,9 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         y_pred = np.zeros(X.shape[0], dtype=self.y_.dtype)
 
         for i in range(X.shape[0]):
-            nearest_indices = np.argsort(distances[i])[:self.n_neighbors]
+            nearest_indices = np.argsort(
+                distances[i]
+            )[:self.n_neighbors]
 
             nearest_labels = self.y_[nearest_indices]
 
@@ -148,23 +147,25 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         return y_pred
 
     def score(self, X, y):
-            """Calculate the score of the prediction.
+        """Calculate the score of the prediction.
 
-            Parameters
-            ----------
-            X : ndarray, shape (n_samples, n_features)
-                Data to score on.
-            y : ndarray, shape (n_samples,)
-                target values.
+        Parameters
+        ----------
+        X : ndarray, shape (n_samples, n_features)
+            Data to score on.
+        y : ndarray, shape (n_samples,)
+            Target values.
 
-            Returns
-            ----------
-            score : float
-                Accuracy of the model computed for the (X, y) pairs.
-            """
-            y_pred = self.predict(X)
+        Returns
+        -------
+        score : float
+            Accuracy of the model computed for the (X, y) pairs.
+        """
+        y_pred = self.predict(X)
 
-            return np.mean(y_pred == y)
+        return np.mean(y_pred == y)
+
+
 class MonthlySplit(BaseCrossValidator):
     """CrossValidator based on monthly split.
 
@@ -181,7 +182,8 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  
+    def __init__(self, time_col='index'):
+        """Initialize the monthly cross-validator."""
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -283,5 +285,6 @@ class MonthlySplit(BaseCrossValidator):
             idx_test = all_indices[months == test_month]
 
             yield (
-                idx_train, idx_test
+                idx_train,
+                idx_test
             )
